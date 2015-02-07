@@ -1,6 +1,8 @@
 package com.example.danco.homework5.h255danco.fragment;
 
+import android.app.Activity;
 import android.app.Notification;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -8,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,8 +30,9 @@ import com.example.danco.homework5.h255danco.activity.TopLevelActivity;
  */
 public class FloatingActionFragment extends Fragment implements View.OnClickListener {
 
-    private FloatingActionFragmentListener listener;
+    private static final String TAG = FloatingActionFragment.class.getSimpleName() + ".tag";
 
+    private FloatingActionFragmentListener listener;
 
     /**
      * Use this factory method to create a new instance of
@@ -69,6 +73,13 @@ public class FloatingActionFragment extends Fragment implements View.OnClickList
         // The button clicked so build a notification
 
         //count the clicks and save to sharedPrefs
+        SharedPreferences sharedPrefs = getActivity().getApplicationContext().getSharedPreferences(
+                        getString(R.string.sharedPreferencesKey), Activity.MODE_PRIVATE);
+        SharedPreferences.Editor prefsEditor = sharedPrefs.edit();
+        int notificationCount = sharedPrefs.getInt(getString(R.string.notificationCount), 0);
+        prefsEditor.putInt(getString(R.string.notificationCount), ++notificationCount);
+        prefsEditor.commit();
+        Log.i(TAG, "Notification count: " + notificationCount);
 
         // Always use NotificationCompat as large number of changes across all versions of
         // android. Notification Compat takes care of building a notification that is
@@ -77,57 +88,66 @@ public class FloatingActionFragment extends Fragment implements View.OnClickList
         // Build public notification, subset of text ok to be shown when phone is locked.
         Notification publicNotification = new NotificationCompat.Builder(getActivity())
                 .setSmallIcon(R.drawable.ic_stat_action_android)
-                .setContentTitle("Notification Demo")
-                .setContentText("Sample pubic notification data")
-                .setTicker("Sample pubic notification data")
+                .setContentTitle("Notification Title")
+                .setContentText("Notification Count: " + notificationCount)
+                .setTicker("Sample pubic notification ticker")
                 .setAutoCancel(true)
                 .build();
 
         // Private notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getActivity())
                 .setSmallIcon(R.drawable.ic_stat_action_android)
-                .setContentTitle("Notification Demo")
+                .setContentTitle("Notification Title")
 
-                        // Need to set for OS versions that can not handle Styles. Also used when
-                        // notification is "compressed" vs "expanded"
-                .setContentText("Sample private notification data")
+                // Need to set for OS versions that can not handle Styles. Also used when
+                // notification is "compressed" vs "expanded"
+                .setContentText("Sample private notification text")
 
-                        // Left for older OS versions where notification would scroll in status bar
-                .setTicker("Sample private notification data")
+                // Left for older OS versions where notification would scroll in status bar
+                .setTicker("Sample private notification ticker")
 
-                        // For OS versions that do not use actions, auto cancel is important
+                // For OS versions that do not use actions, auto cancel is important
                 .setAutoCancel(true)
 
-                        // Showing an expanded text style
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(getString(R.string.long_notification_text)))
-
-                        // New for Android 5.0/Wear to set the background color behind the icon
+                // New for Android 5.0/Wear to set the background color behind the icon
                 .setColor(getResources().getColor(R.color.colorPrimary))
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
 
-                        // Add public version of the notification
-                .setPublicVersion(publicNotification)
+                // Add public version of the notification
+                .setPublicVersion(publicNotification);
 
-                        // Adding two actions that will show the scale or color fragment respectively.
-                .addAction(R.drawable.ic_stat_image_flare, "Scale",
-                        TopLevelActivity.buildNotificationIntent(getActivity(), TopLevelActivity.SCALE_POS))
-                .addAction(R.drawable.ic_stat_image_color_lens, "Color",
-                        TopLevelActivity.buildNotificationIntent(getActivity(), TopLevelActivity.COLOR_POS));
+        if (notificationCount == 1) {
+            // Showing an expanded text style
+            builder.setStyle(new NotificationCompat.BigTextStyle()
+                    .bigText(getString(R.string.long_notification_text)))
+
+            .addAction(R.drawable.ic_stat_image_flare, "Open",
+                    TopLevelActivity.buildNotificationIntent(getActivity(),
+                            TopLevelActivity.FLOATING_ACTION_BUTTON_POS));
+        } else {
+            builder.setStyle(new NotificationCompat.InboxStyle())
+                    .setSubText("Item " + notificationCount)
+                    .setNumber(notificationCount)
+                    .setContentIntent(TopLevelActivity.buildNotificationIntent(getActivity(),
+                            TopLevelActivity.FLOATING_ACTION_BUTTON_POS));
+        }
 
         // Only add a default intent for Jelly Bean and below. Above, the action buttons provide
         // similar functionality
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
             // Always takes you to transform... Still works on newer OS and makes the main
             // notification clickable which isn't desired with action buttons.
-            builder.setContentIntent(TopLevelActivity.buildNotificationIntent(getActivity(), TopLevelActivity.TRANSLATION_POS));
+            builder.setContentIntent(TopLevelActivity.buildNotificationIntent(getActivity(),
+                    TopLevelActivity.FLOATING_ACTION_BUTTON_POS));
         }
 
-        // Using notification manager compat to send notification. Required for Android Wear/Auto extensions on
-        // older phones.
-        NotificationManagerCompat.from(getActivity()).notify(TopLevelActivity.NOTIFICATION_ID, builder.build());
+        // Using notification manager compat to send notification.
+        // Required for Android Wear/Auto extensions on older phones.
+        NotificationManagerCompat.from(getActivity()).notify(
+                TopLevelActivity.NOTIFICATION_ID, builder.build());
     }
 
 

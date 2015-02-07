@@ -2,6 +2,9 @@
 <resources>
 
     <string name="app_name">Homework 5</string>
+    <string name="sharedPreferencesKey">APP_SHARED_PREFS</string>
+    <string name="notificationCount">NOTIFICATION_COUNT_KEY</string>
+
     <string name="title_activity_top_level">H255 danco</string>
     <string name="title_activity_contact_detail">Contact Details</string>
     <string name="title_activity_settings">Settings</string>

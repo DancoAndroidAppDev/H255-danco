@@ -1,18 +1,23 @@
 package com.example.danco.homework5.h255danco.activity;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -34,14 +39,13 @@ public class TopLevelActivity extends ActionBarActivity
         implements AdapterView.OnItemClickListener, View.OnClickListener {
     public static final int NOTIFICATION_ID = 100;
 
+    private static final String TAG = TopLevelActivity.class.getSimpleName() + ".tag";
     private static final String STATE_SELECTED_POSITION = "selectedPosition";
     private static final int BASE_REQUEST_CODE = 100;
     private static final String ACTION_NOTIFICATION = TopLevelActivity.class.getName() + ".notification";
     private static final String EXTRA_POSITION = TopLevelActivity.class.getName() + ".position";
 
-    public static final int TRANSLATION_POS = 0;
-    public static final int SCALE_POS = 1;
-    public static final int COLOR_POS = 2;
+    public static final int FLOATING_ACTION_BUTTON_POS = 3;
 
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
@@ -100,6 +104,19 @@ public class TopLevelActivity extends ActionBarActivity
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.topLevelToolBar);
         setSupportActionBar(toolbar);
+
+        selectedPosition = getIntent().getIntExtra(EXTRA_POSITION, selectedPosition);
+        boolean isNotificationStart = ACTION_NOTIFICATION.equals(getIntent().getAction());
+        if (isNotificationStart) {
+            SharedPreferences sharedPrefs = getApplicationContext().getSharedPreferences(
+                    getString(R.string.sharedPreferencesKey), Activity.MODE_PRIVATE);
+            SharedPreferences.Editor prefsEditor = sharedPrefs.edit();
+            prefsEditor.putInt(getString(R.string.notificationCount), 0);
+            prefsEditor.commit();
+            Log.i(TAG, "Notification count reset to 0" );
+
+            NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID);
+        }
 
         if (savedInstanceState != null) {
             selectedPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION, selectedPosition);
