@@ -35,6 +35,8 @@ public class CustomComponent extends ImageView {
     private int endHorizontal;
     private int topVertical;
     private int bottomVertical;
+    private int height;
+    private int width;
 
     public CustomComponent(Context context) {
         super(context);
@@ -84,7 +86,14 @@ public class CustomComponent extends ImageView {
         paint.setStyle(Paint.Style.STROKE);
 
         // Update TextPaint and text measurements from attributes
-        invalidatePaintAndMeasurements();
+        invalidatePaintAndMeasurements(false);
+    }
+
+
+    public void setRightColorPercentage(int rightColorPercentage) {
+        this.rightColorPercentage = rightColorPercentage;
+        arcSweepSize = convertToDegrees(rightColorPercentage);
+        invalidatePaintAndMeasurements(true);
     }
 
 
@@ -93,28 +102,23 @@ public class CustomComponent extends ImageView {
     }
 
 
-    private void invalidatePaintAndMeasurements() {
+    private void invalidatePaintAndMeasurements(boolean invalidateView) {
         paint.setStrokeWidth(paintSize);
-    }
 
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
+        centerHeight = height / 2;
+        centerWidth = width / 2;
 
-        centerHeight = h / 2;
-        centerWidth = w / 2;
-
-        int scale = Math.min(w, h);
+        int scale = Math.min(width, height);
         int horizontalOffset = 0;
         int verticalOffset = 0;
 
         // handling the scaleType this way is ugly, but I couldn't get
         //  ScaleType.valueOf(scaleType) to work...
         if (scaleType != null && scaleType.equals("7")) {
-            if (w > h) {
-                horizontalOffset = (w - h) / 2;
-            } else if (h > w) {
-                verticalOffset = (h - w) / 2;
+            if (width > height) {
+                horizontalOffset = (width - height) / 2;
+            } else if (height > width) {
+                verticalOffset = (height - width) / 2;
             }
         }
         startHorizontal = ViewCompat.getPaddingStart(this) + horizontalOffset;
@@ -125,7 +129,19 @@ public class CustomComponent extends ImageView {
         oval = new RectF(startHorizontal + paintSize/2, topVertical + paintSize/2,
                 endHorizontal - paintSize/2, bottomVertical - paintSize/2);
 
-        super.setScaleType(ScaleType.CENTER_INSIDE);
+        if (invalidateView) {
+            invalidate();
+        }
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+
+        height = h;
+        width = w;
+
+        invalidatePaintAndMeasurements(false);
     }
 
     @Override
@@ -167,7 +183,7 @@ public class CustomComponent extends ImageView {
      */
     public void setLeftColor(int exampleColor) {
         leftColor = exampleColor;
-        invalidatePaintAndMeasurements();
+        invalidatePaintAndMeasurements(true);
     }
 
     /**
@@ -178,7 +194,7 @@ public class CustomComponent extends ImageView {
      */
     public void setRightColor(int exampleColor) {
         rightColor = exampleColor;
-        invalidatePaintAndMeasurements();
+        invalidatePaintAndMeasurements(true);
     }
 
     public int getPaintSize() {
@@ -187,7 +203,7 @@ public class CustomComponent extends ImageView {
 
     public void setPaintSize(int paintSize) {
         this.paintSize = paintSize;
-        invalidatePaintAndMeasurements();
+        invalidatePaintAndMeasurements(true);
     }
 
 }
