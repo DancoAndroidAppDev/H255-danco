@@ -1,5 +1,8 @@
 package com.example.danco.homework5.h255danco.activity;
 
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,8 +32,16 @@ import com.example.danco.homework5.h255danco.fragment.GridViewFragment;
 
 public class TopLevelActivity extends ActionBarActivity
         implements AdapterView.OnItemClickListener, View.OnClickListener {
+    public static final int NOTIFICATION_ID = 100;
 
     private static final String STATE_SELECTED_POSITION = "selectedPosition";
+    private static final int BASE_REQUEST_CODE = 100;
+    private static final String ACTION_NOTIFICATION = TopLevelActivity.class.getName() + ".notification";
+    private static final String EXTRA_POSITION = TopLevelActivity.class.getName() + ".position";
+
+    public static final int TRANSLATION_POS = 0;
+    public static final int SCALE_POS = 1;
+    public static final int COLOR_POS = 2;
 
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
@@ -38,6 +49,47 @@ public class TopLevelActivity extends ActionBarActivity
 
     private String[] titleArray;
     private int selectedPosition = 1;
+
+
+    /**
+     * Helpers to build various intents and pending intents
+     * @param context
+     * @return
+     */
+    public static Intent buildIntent(Context context, int position) {
+        Intent intent = new Intent(context, TopLevelActivity.class);
+        intent.putExtra(EXTRA_POSITION, position);
+        return intent;
+    }
+
+    public static PendingIntent buildNotificationIntent(Context context, int position) {
+        return buildNotificationIntent(context, BASE_REQUEST_CODE + position, buildIntent(context, position));
+    }
+
+
+    private static PendingIntent buildNotificationIntent(Context context, int requestCode, Intent intent) {
+        // This extra is to help inform main activity it should "clear" the notification.
+        intent.setAction(ACTION_NOTIFICATION);
+        return buildPendingIntent(context, requestCode, intent);
+    }
+
+
+    private static PendingIntent buildPendingIntent(Context context, int requestCode, Intent intent) {
+        // Since this is a pending intent, the app may or may not be currently running.
+        // NEW_TASK ensures the app is started if it is not currently running
+        // CLEAR_TASK removes all current activities in the task, making this activity the only activity
+        // in the back stack.
+
+        // Note: CLEAR_TASK is new in API 11, if you were supporting 2.3, you may need to use CLEAR_TOP
+        // instead. However the difference is there may be other activities in the back stack.
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        return PendingIntent.getActivity(
+                context,
+                requestCode,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

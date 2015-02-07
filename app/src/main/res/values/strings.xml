@@ -37,4 +37,6 @@
     <string name="viewPropertyAnimation">ViewPropertyAnimation</string>
     <string name="objectPropertyAnimation">ObjectPropertyAnimation</string>
 
+    <string name="long_notification_text">This is a very long private notification text that hopefully will scroll many many lines</string>
+
 </resources>
