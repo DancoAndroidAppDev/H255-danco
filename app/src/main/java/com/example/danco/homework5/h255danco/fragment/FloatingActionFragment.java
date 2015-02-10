@@ -70,7 +70,9 @@ public class FloatingActionFragment extends Fragment implements View.OnClickList
 
     @Override
     public void onClick(View v) {
-        // The button clicked so build a notification
+        // The button clicked so build a notification -- I'm guessing there's a better place to
+        //  put all this code, like some sort of async event where the UI doesn't have to wait
+        //  around till this method is done...
 
         //count the clicks and save to sharedPrefs
         SharedPreferences sharedPrefs = getActivity().getApplicationContext().getSharedPreferences(
