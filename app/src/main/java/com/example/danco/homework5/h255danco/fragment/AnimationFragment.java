@@ -109,7 +109,7 @@ public class AnimationFragment extends Fragment implements View.OnClickListener{
         @Override
         public void run() {
             ViewCompat.animate(theRing)
-                    .translationYBy(25f)
+                    .translationXBy(25f)
                     .translationYBy(-100f)
                     .setDuration(1000).setInterpolator(interpolator)
                     .withEndAction(new DropAndRotate())
@@ -136,6 +136,8 @@ public class AnimationFragment extends Fragment implements View.OnClickListener{
     class Squish implements Runnable {
         @Override
         public void run() {
+            Interpolator interpolator = AnimationUtils.loadInterpolator(
+                    getActivity(), android.R.interpolator.linear);
             ViewCompat.animate(theRing)
                     .scaleYBy(-.75f)
                     .scaleXBy(1.25f)
